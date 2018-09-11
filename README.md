@@ -1,6 +1,12 @@
 # screenshot-service
 takes website's screenshots by given url.
 
+- source file
+~/screenshot-service/src/main/resources/url-list.txt
+
+- output folder 
+~/screenshot-service/screenshot-output
+
 - to run as a standalone jar file: 
 ```sh
 ./gradlew build
