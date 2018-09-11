@@ -1,0 +1,70 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.4.RELEASE'
+	}
+	repositories {
+		maven {
+	        url "https://plugins.gradle.org/m2/"
+	    }
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath "gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.20.1"
+	}
+}
+
+plugins {
+  id "com.palantir.docker" version "0.20.1"
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'application'
+apply plugin: "com.palantir.docker"
+
+group = 'alparslantas'
+version =  '0.1.0'
+
+sourceCompatibility = 1.8
+
+mainClassName = 'com.tasalparslan.screenshotservice.ScreenshotServiceApplication'
+
+task fatJar(type: Jar) {
+	manifest {
+        attributes 'Implementation-Title': 'Screenshot Service',  
+        	'Implementation-Version': version,
+        	'Main-Class': 'com.tasalparslan.screenshotservice.ScreenshotServiceApplication'
+    }
+    baseName = 'screenshot-service' + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter')
+	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	
+	compile group: 'io.webfolder', name: 'cdp4j', version: '3.0.6'
+	compile group: 'io.webfolder', name: 'ui4j-api', version: '3.1.0'
+	compile group: 'io.webfolder', name: 'ui4j-webkit', version: '3.1.0'
+
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	
+}
+
+docker {
+    dependsOn build
+    name "${project.group}/${jar.baseName}"
+    files jar.archivePath
+    buildArgs(['JAR_FILE': "${jar.archiveName}"])
+}
+
